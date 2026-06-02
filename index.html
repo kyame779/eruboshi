@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>えるぼし認定　取得可能性チェック</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Meiryo', 'Yu Gothic', sans-serif; background: #F8F5FF; padding: 24px 16px; font-size: 13px; color: #2D2250; }
+  .container { max-width: 480px; margin: 0 auto; }
+  h1 { text-align: center; color: #6B3FA0; font-size: 18px; margin-bottom: 6px; }
+  .subtitle { text-align: center; color: #64748B; font-size: 11px; margin-bottom: 20px; }
+  .section-label { background: #6B3FA0; color: #fff; font-size: 11px; font-weight: bold; border-radius: 6px; padding: 4px 12px; margin-bottom: 10px; display: inline-block; }
+  .card { background: #fff; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .yn-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F1F5F9; }
+  .yn-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .yn-text { flex: 1; font-size: 12px; line-height: 1.5; }
+  .yn-text .note { font-size: 10px; color: #64748B; margin-top: 2px; }
+  .yn-btns { display: flex; gap: 6px; flex-shrink: 0; }
+  .btn-y, .btn-n { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; border: 1.5px solid; cursor: pointer; transition: all 0.15s; }
+  .btn-y { color: #00A896; border-color: #00A896; background: #fff; }
+  .btn-y.active, .btn-y:hover { background: #00A896; color: #fff; }
+  .btn-n { color: #F97316; border-color: #F97316; background: #fff; }
+  .btn-n.active, .btn-n:hover { background: #F97316; color: #fff; }
+
+  /* 評価項目（3択） */
+  .eval-item { background: #fff; border: 1.5px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; transition: all 0.15s; }
+  .eval-item.sel-yes  { border-color: #00A896; background: #E0F5F2; }
+  .eval-item.sel-no   { border-color: #F97316; background: #FFF3E0; }
+  .eval-item.sel-uk   { border-color: #94A3B8; background: #F8FAFC; }
+  .eval-top { display: flex; align-items: flex-start; gap: 10px; }
+  .eval-label { flex: 1; font-size: 12px; line-height: 1.5; }
+  .eval-label .note { font-size: 10px; color: #64748B; margin-top: 2px; }
+  .eval-btns { display: flex; gap: 5px; flex-shrink: 0; margin-top: 1px; }
+  .eb { padding: 4px 9px; border-radius: 6px; font-size: 11px; font-weight: bold; border: 1.5px solid; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .eb-y  { color: #00A896; border-color: #00A896; background: #fff; }
+  .eb-y.active  { background: #00A896; color: #fff; }
+  .eb-n  { color: #F97316; border-color: #F97316; background: #fff; }
+  .eb-n.active  { background: #F97316; color: #fff; }
+  .eb-uk { color: #64748B; border-color: #94A3B8; background: #fff; }
+  .eb-uk.active { background: #64748B; color: #fff; border-color: #64748B; }
+
+  .calc-btn { width: 100%; background: #6B3FA0; color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 4px; transition: background 0.15s; }
+  .calc-btn:hover { background: #5a3390; }
+  .result-panel { border-radius: 12px; padding: 16px; margin-top: 12px; display: none; }
+  .result-panel.show { display: block; }
+  .result-ok  { background: #E0F5F2; border: 2px solid #00A896; }
+  .result-uk  { background: #EDE9FF; border: 2px solid #6B3FA0; }
+  .result-ng  { background: #FFF3E0; border: 2px solid #F97316; }
+  .result-title { font-size: 15px; font-weight: bold; margin-bottom: 8px; }
+  .result-ok .result-title { color: #00A896; }
+  .result-uk .result-title { color: #6B3FA0; }
+  .result-ng .result-title { color: #F97316; }
+  .result-body { font-size: 12px; line-height: 1.7; }
+  .cta-btn { display: block; width: 100%; margin-top: 12px; background: #6B3FA0; color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; transition: background 0.15s; }
+  .cta-btn:hover { background: #5a3390; }
+  .stage-badges { display: flex; gap: 8px; margin: 10px 0; }
+  .badge { flex: 1; border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 11px; }
+  .badge .star { font-size: 16px; }
+  .badge .bl { font-size: 10px; color: #64748B; margin-top: 2px; }
+  .b1 { background: #EDE9FF; border: 1.5px solid #6B3FA0; }
+  .b2 { background: #D4F1ED; border: 1.5px solid #00A896; }
+  .b3 { background: #FFF3E0; border: 1.5px solid #F97316; }
+  .arrow { text-align: center; color: #6B3FA0; font-size: 20px; margin: 4px 0; }
+  .hidden { display: none; }
+  .spacer { height: 8px; }
+  .legend { display: flex; gap: 10px; margin-bottom: 10px; font-size: 10px; color: #64748B; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🌟 えるぼし認定<br>取得可能性チェック</h1>
+  <p class="subtitle">いくつかの質問に答えるだけで取得の可能性を確認できます<br>和歌山県　えるぼし取得支援アドバイザー派遣事業</p>
+
+  <div class="stage-badges">
+    <div class="badge b1"><div class="star">⭐</div><div>１段階目</div><div class="bl">1〜2項目</div></div>
+    <div class="badge b2"><div class="star">⭐⭐</div><div>２段階目</div><div class="bl">3〜4項目</div></div>
+    <div class="badge b3"><div class="star">⭐⭐⭐</div><div>３段階目</div><div class="bl">全5項目</div></div>
+  </div>
+  <div class="spacer"></div>
+
+  <!-- STEP 1 -->
+  <div class="section-label">STEP 1｜前提条件の確認</div>
+  <div class="card">
+    <div class="yn-item">
+      <div class="yn-text">
+        ① 一般事業主行動計画を策定・届出していますか？
+        <div class="note">※ 101人以上は義務、100人以下は努力義務</div>
+      </div>
+      <div class="yn-btns">
+        <button class="btn-y" id="p0y" onclick="setPre(0,'yes')">YES</button>
+        <button class="btn-n" id="p0n" onclick="setPre(0,'no')">NO</button>
+      </div>
+    </div>
+    <div class="yn-item">
+      <div class="yn-text">
+        ② 女性活躍に関する情報をデータベース等で公表していますか？
+        <div class="note">※ 女性の活躍推進企業データベースへの登録など</div>
+      </div>
+      <div class="yn-btns">
+        <button class="btn-y" id="p1y" onclick="setPre(1,'yes')">YES</button>
+        <button class="btn-n" id="p1n" onclick="setPre(1,'no')">NO</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pre-ng" class="result-panel result-ng">
+    <div class="result-title">⚠️ 前提条件の整備が必要です</div>
+    <div class="result-body">
+      えるぼし認定の申請には、行動計画の策定・届出と情報公表が前提となります。<br>
+      まずはこれらの整備から始める必要があります。<br><br>
+      <strong>アドバイザー派遣を活用することで、前提条件の整備から認定申請まで専門家がサポートします。</strong>
+    </div>
+    <button class="cta-btn" onclick="window.open('https://logoform.jp/f/Letld', '_blank')">👩‍💼 アドバイザー派遣に申し込む →</button>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" class="hidden">
+    <div class="arrow">▼</div>
+    <div class="section-label">STEP 2｜５つの評価項目チェック</div>
+    <p style="font-size:11px;color:#64748B;margin-bottom:8px;">各項目について、貴社の状況に最も近いものを選択してください</p>
+    <div class="legend">
+      <span><span style="color:#00A896;font-weight:bold;">YES</span>＝基準を満たしている</span>
+      <span><span style="color:#F97316;font-weight:bold;">NO</span>＝満たしていない</span>
+      <span><span style="color:#64748B;font-weight:bold;">？</span>＝わからない</span>
+    </div>
+
+    <div class="eval-item" id="ei0">
+      <div class="eval-top">
+        <div class="eval-label">① 採用<div class="note">女性採用比率が産業平均以上、または男女の採用競争倍率が同程度</div></div>
+        <div class="eval-btns">
+          <button class="eb eb-y"  onclick="setEval(0,'yes')">YES</button>
+          <button class="eb eb-n"  onclick="setEval(0,'no')">NO</button>
+          <button class="eb eb-uk" onclick="setEval(0,'uk')">？</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="eval-item" id="ei1">
+      <div class="eval-top">
+        <div class="eval-label">② 継続就業<div class="note">女性の平均継続勤務年数が男性の７割以上、または雇用管理区分ごとの基準を満たす</div></div>
+        <div class="eval-btns">
+          <button class="eb eb-y"  onclick="setEval(1,'yes')">YES</button>
+          <button class="eb eb-n"  onclick="setEval(1,'no')">NO</button>
+          <button class="eb eb-uk" onclick="setEval(1,'uk')">？</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="eval-item" id="ei2">
+      <div class="eval-top">
+        <div class="eval-label">③ 労働時間等の働き方<div class="note">各月の時間外・休日労働が一定時間以下、かつ有給取得率が基準以上</div></div>
+        <div class="eval-btns">
+          <button class="eb eb-y"  onclick="setEval(2,'yes')">YES</button>
+          <button class="eb eb-n"  onclick="setEval(2,'no')">NO</button>
+          <button class="eb eb-uk" onclick="setEval(2,'uk')">？</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="eval-item" id="ei3">
+      <div class="eval-top">
+        <div class="eval-label">④ 管理職比率<div class="note">女性管理職の割合が産業ごとの平均以上</div></div>
+        <div class="eval-btns">
+          <button class="eb eb-y"  onclick="setEval(3,'yes')">YES</button>
+          <button class="eb eb-n"  onclick="setEval(3,'no')">NO</button>
+          <button class="eb eb-uk" onclick="setEval(3,'uk')">？</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="eval-item" id="ei4">
+      <div class="eval-top">
+        <div class="eval-label">⑤ 多様なキャリアコース<div class="note">非正規→正規転換、再雇用・中途採用での管理職登用等の実績あり</div></div>
+        <div class="eval-btns">
+          <button class="eb eb-y"  onclick="setEval(4,'yes')">YES</button>
+          <button class="eb eb-n"  onclick="setEval(4,'no')">NO</button>
+          <button class="eb eb-uk" onclick="setEval(4,'uk')">？</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+    <button class="calc-btn" onclick="calcResult()">結果を確認する →</button>
+
+    <div id="result-panel" class="result-panel">
+      <div class="result-title" id="res-title"></div>
+      <div class="result-body" id="res-body"></div>
+      <button class="cta-btn" id="res-cta" style="display:none" onclick="showContact()">👩‍💼 アドバイザー派遣に申し込む →</button>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;text-align:center;font-size:10px;color:#94A3B8;">
+    ※このチェックは目安です。詳細は社会保険労務士等の専門家にご相談ください。<br>
+    和歌山県 ○○部○○課｜TEL: 073-XXX-XXXX
+  </div>
+</div>
+
+<script>
+  const preState = [null, null];
+  const evalState = [null, null, null, null, null];
+
+  function setPre(idx, val) {
+    preState[idx] = val;
+    document.getElementById('p' + idx + 'y').classList.toggle('active', val === 'yes');
+    document.getElementById('p' + idx + 'n').classList.toggle('active', val === 'no');
+    evaluatePre();
+  }
+
+  function evaluatePre() {
+    if (preState[0] === null || preState[1] === null) return;
+    const ng = preState[0] === 'no' || preState[1] === 'no';
+    document.getElementById('pre-ng').classList.toggle('show', ng);
+    document.getElementById('step2').classList.toggle('hidden', ng);
+    document.getElementById('result-panel').classList.remove('show');
+  }
+
+  function setEval(idx, val) {
+    evalState[idx] = val;
+    const item = document.getElementById('ei' + idx);
+    item.classList.remove('sel-yes','sel-no','sel-uk');
+    item.classList.add(val === 'yes' ? 'sel-yes' : val === 'no' ? 'sel-no' : 'sel-uk');
+    const btns = item.querySelectorAll('.eb');
+    btns[0].classList.toggle('active', val === 'yes');
+    btns[1].classList.toggle('active', val === 'no');
+    btns[2].classList.toggle('active', val === 'uk');
+    document.getElementById('result-panel').classList.remove('show');
+  }
+
+  function calcResult() {
+    const unanswered = evalState.filter(s => s === null).length;
+    if (unanswered > 0) {
+      alert('全項目にお答えください（わからない場合は「？」を選択してください）');
+      return;
+    }
+    const yes = evalState.filter(s => s === 'yes').length;
+    const uk  = evalState.filter(s => s === 'uk').length;
+
+    const panel = document.getElementById('result-panel');
+    const title = document.getElementById('res-title');
+    const body  = document.getElementById('res-body');
+    const cta   = document.getElementById('res-cta');
+    panel.className = 'result-panel show';
+    cta.style.display = 'block';
+
+    if (uk > 0) {
+      // わからないが1つでもある
+      panel.classList.add('result-uk');
+      title.textContent = '🔍 詳しい診断が必要です';
+      const maybeMin = yes;
+      const maybeMax = yes + uk;
+      let stageMsg = '';
+      if (maybeMax >= 5) stageMsg = '最大で３段階目（最高位）';
+      else if (maybeMax >= 3) stageMsg = '最大で２段階目';
+      else if (maybeMax >= 1) stageMsg = '最大で１段階目';
+      else stageMsg = '認定基準の達成';
+      body.innerHTML = `確定できている項目は<strong>${yes}項目</strong>、「わからない」が<strong>${uk}項目</strong>あります。<br><br>
+        わからない項目が基準を満たしているかどうかによって、<strong>${stageMsg}</strong>の可能性があります。<br><br>
+        アドバイザーが無料で現状を診断し、「わからない」項目の確認から申請準備まで一緒に整理します。ぜひお気軽にご相談ください。`;
+    } else if (yes === 0) {
+      panel.classList.add('result-ng');
+      title.textContent = '⚠️ 現時点では認定基準を満たす項目がありません';
+      body.innerHTML = '現時点ではえるぼし認定の取得は難しい状況ですが、<strong>取組み次第で改善できる項目があります。</strong><br><br>アドバイザーが現状を丁寧に診断し、どの項目から取り組むべきかを一緒に整理します。まずは無料相談からお気軽にどうぞ。';
+    } else if (yes <= 2) {
+      panel.classList.add('result-ok');
+      title.textContent = `⭐ えるぼし認定【１段階目】の可能性があります！`;
+      body.innerHTML = `<strong>${yes}項目</strong>が基準を満たしており、<strong>えるぼし認定１段階目</strong>の取得が見込めます。<br><br>残り${5 - yes}項目の改善に取り組むことで、さらに上の段階も目指せます。アドバイザーと一緒に申請準備を進めましょう。`;
+    } else if (yes <= 4) {
+      panel.classList.add('result-ok');
+      title.textContent = `⭐⭐ えるぼし認定【２段階目】の可能性があります！`;
+      body.innerHTML = `<strong>${yes}項目</strong>が基準を満たしており、<strong>えるぼし認定２段階目</strong>の取得が見込めます。<br><br>あと<strong>${5 - yes}項目</strong>クリアすれば最高位の３段階目も視野に入ります。アドバイザーと一緒に申請準備を進めましょう。`;
+    } else {
+      panel.classList.add('result-ok');
+      title.textContent = '⭐⭐⭐ えるぼし認定【最高位・３段階目】の可能性があります！';
+      body.innerHTML = '<strong>全５項目</strong>が基準を満たしており、<strong>えるぼし認定３段階目（最高位）</strong>の取得が十分見込めます。<br><br>プラチナえるぼしも視野に入れながら、申請手続きをスムーズに進めましょう。アドバイザーが全力でサポートします。';
+    }
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function showContact() {
+    alert('和歌山県多様な生き方支援課\nTEL: 073-441-2510\nMAIL: e1105001@pref.wakayama.lg.jp\n\nお気軽にお問い合わせください。');
+  }
+</script>
+</body>
+</html>
